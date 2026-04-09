@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import WellMap from './components/WellMap'
 
 function getRiskLevel(reading) {
   if (!reading) return 'neutral'
@@ -99,11 +100,18 @@ export default function App() {
 
   return (
     <div style={{
+      width: '100%',
+      boxSizing: 'border-box',
       minHeight: '100vh',
       background: '#1a1a2e',
       color: '#eee',
       fontFamily: 'system-ui, sans-serif',
+    }}>
+    <div style={{
+      maxWidth: '1400px',
+      margin: '0 auto',
       padding: '32px 40px',
+      boxSizing: 'border-box',
     }}>
       <h1 style={{
         fontSize: 26,
@@ -115,6 +123,10 @@ export default function App() {
       }}>
         Monitor de Pozos — Vaca Muerta
       </h1>
+
+      <div style={{ marginBottom: 32 }}>
+        <WellMap wells={wells} readings={readings} />
+      </div>
 
       <div style={{
         display: 'grid',
@@ -129,6 +141,7 @@ export default function App() {
           />
         ))}
       </div>
+    </div>
     </div>
   )
 }
