@@ -1,5 +1,6 @@
 import asyncio
 import json
+import random
 from contextlib import asynccontextmanager
 from typing import Optional
 
@@ -10,6 +11,8 @@ from sqlalchemy.orm import Session
 
 from database import Well, Reading, SessionLocal, get_db, init_db
 from simulator import get_all_wells, simulate_batch
+from ml.detector import get_risk_score, reload_model
+from ml.train import train
 
 
 # ---------------------------------------------------------------------------
@@ -32,6 +35,7 @@ class ReadingResponse(BaseModel):
     pressure: float
     temperature: float
     flow_rate: float
+    risk_score: float = 0.0
 
     model_config = {"from_attributes": True}
 
@@ -74,7 +78,8 @@ async def simulator_loop():
 
         db = SessionLocal()
         try:
-            readings = simulate_batch()
+            anomaly_id = random.randint(1, 10) if random.random() < 1/6 else None
+            readings = simulate_batch(anomaly_well_id=anomaly_id)
             db_readings = []
             for r in readings:
                 row = Reading(**r)
@@ -84,7 +89,11 @@ async def simulator_loop():
             for row in db_readings:
                 db.refresh(row)
 
-            payload = [ReadingResponse.model_validate(row).model_dump() for row in db_readings]
+            payload = []
+            for row, r in zip(db_readings, readings):
+                entry = ReadingResponse.model_validate(row).model_dump()
+                entry["risk_score"] = get_risk_score(r["pressure"], r["temperature"], r["flow_rate"])
+                payload.append(entry)
             await manager.broadcast(json.dumps(payload))
         finally:
             db.close()
@@ -162,6 +171,18 @@ def simulate(
     for row in db_readings:
         db.refresh(row)
     return db_readings
+
+
+# ---------------------------------------------------------------------------
+# ML endpoints
+# ---------------------------------------------------------------------------
+
+@app.post("/retrain")
+def retrain(db: Session = Depends(get_db)):
+    total = db.query(Reading).count()
+    train()
+    reload_model()
+    return {"message": "Modelo reentrenado correctamente.", "total_readings": total}
 
 
 # ---------------------------------------------------------------------------

@@ -32,13 +32,29 @@ function WellCard({ well, reading }) {
         {well.name}
       </div>
       {reading ? (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-          <tbody>
-            <Row label="Presión"     value={`${reading.pressure} bar`}   />
-            <Row label="Temperatura" value={`${reading.temperature} °C`} />
-            <Row label="Caudal"      value={`${reading.flow_rate} m³/d`} />
-          </tbody>
-        </table>
+        <>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <tbody>
+              <Row label="Presión"     value={`${reading.pressure} bar`}   />
+              <Row label="Temperatura" value={`${reading.temperature} °C`} />
+              <Row label="Caudal"      value={`${reading.flow_rate} m³/d`} />
+            </tbody>
+          </table>
+          <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ flex: 1, background: '#2a2a4a', borderRadius: 4, height: 8, overflow: 'hidden' }}>
+              <div style={{
+                width: `${Math.round((reading.risk_score ?? 0) * 100)}%`,
+                height: '100%',
+                background: BORDER_COLOR[risk],
+                borderRadius: 4,
+                transition: 'width 0.4s ease',
+              }} />
+            </div>
+            <span style={{ fontSize: 12, color: '#aaa', minWidth: 36, textAlign: 'right' }}>
+              {Math.round((reading.risk_score ?? 0) * 100)}%
+            </span>
+          </div>
+        </>
       ) : (
         <div style={{ color: '#555', fontSize: 13 }}>Sin datos aún…</div>
       )}
