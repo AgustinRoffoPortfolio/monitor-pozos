@@ -19,6 +19,7 @@ from ml.train import train
 # Pydantic response models
 # ---------------------------------------------------------------------------
 
+
 class WellResponse(BaseModel):
     id: int
     name: str
@@ -57,6 +58,7 @@ class AlertResponse(BaseModel):
 # WebSocket connection manager
 # ---------------------------------------------------------------------------
 
+
 class ConnectionManager:
     def __init__(self):
         self.active: list[WebSocket] = []
@@ -83,6 +85,7 @@ manager = ConnectionManager()
 # Background task: simulate + broadcast every 5 seconds
 # ---------------------------------------------------------------------------
 
+
 async def simulator_loop():
     while True:
         await asyncio.sleep(5)
@@ -91,7 +94,7 @@ async def simulator_loop():
 
         db = SessionLocal()
         try:
-            anomaly_id = random.randint(1, 10) if random.random() < 1/6 else None
+            anomaly_id = random.randint(1, 10) if random.random() < 1 / 6 else None
             readings = simulate_batch(anomaly_well_id=anomaly_id)
             db_readings = []
             for r in readings:
@@ -110,17 +113,25 @@ async def simulator_loop():
                 entry["risk_score"] = score
                 payload.append(entry)
 
-                if (score >= 0.9 or r["pressure"] < 150
-                        or r["temperature"] > 110 or r["flow_rate"] < 30):
-                    db.add(Alert(
-                        well_id=r["well_id"],
-                        well_name=well_names.get(r["well_id"], f"Pozo {r['well_id']}"),
-                        timestamp=r["timestamp"],
-                        pressure=r["pressure"],
-                        temperature=r["temperature"],
-                        flow_rate=r["flow_rate"],
-                        risk_score=score,
-                    ))
+                if (
+                    score >= 0.9
+                    or r["pressure"] < 150
+                    or r["temperature"] > 110
+                    or r["flow_rate"] < 30
+                ):
+                    db.add(
+                        Alert(
+                            well_id=r["well_id"],
+                            well_name=well_names.get(
+                                r["well_id"], f"Pozo {r['well_id']}"
+                            ),
+                            timestamp=r["timestamp"],
+                            pressure=r["pressure"],
+                            temperature=r["temperature"],
+                            flow_rate=r["flow_rate"],
+                            risk_score=score,
+                        )
+                    )
             db.commit()
             await manager.broadcast(json.dumps(payload))
         finally:
@@ -130,6 +141,7 @@ async def simulator_loop():
 # ---------------------------------------------------------------------------
 # Lifespan: init DB, seed wells, start background loop
 # ---------------------------------------------------------------------------
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -157,7 +169,7 @@ app = FastAPI(title="Monitor Pozos", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["http://localhost:5173", "https://monitor-pozos.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -167,6 +179,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # REST endpoints
 # ---------------------------------------------------------------------------
+
 
 @app.get("/wells", response_model=list[WellResponse])
 def get_wells(db: Session = Depends(get_db)):
@@ -205,19 +218,16 @@ def simulate(
 # Alert endpoints
 # ---------------------------------------------------------------------------
 
+
 @app.get("/alerts", response_model=list[AlertResponse])
 def get_alerts(db: Session = Depends(get_db)):
-    return (
-        db.query(Alert)
-        .order_by(Alert.id.desc())
-        .limit(100)
-        .all()
-    )
+    return db.query(Alert).order_by(Alert.id.desc()).limit(100).all()
 
 
 # ---------------------------------------------------------------------------
 # ML endpoints
 # ---------------------------------------------------------------------------
+
 
 @app.post("/retrain")
 def retrain(db: Session = Depends(get_db)):
@@ -230,6 +240,7 @@ def retrain(db: Session = Depends(get_db)):
 # ---------------------------------------------------------------------------
 # WebSocket endpoint
 # ---------------------------------------------------------------------------
+
 
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
