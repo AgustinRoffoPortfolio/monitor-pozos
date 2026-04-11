@@ -149,12 +149,12 @@ export default function App() {
 
   // Fetch wells and initial alert history on mount
   useEffect(() => {
-    fetch("http://localhost:8000/wells")
+    fetch(`${import.meta.env.VITE_API_URL}/wells`)
       .then((r) => r.json())
       .then(setWells)
       .catch(console.error);
 
-    fetch("http://localhost:8000/alerts")
+    fetch(`${import.meta.env.VITE_API_URL}/alerts`)
       .then((r) => r.json())
       .then(setAlertHistory)
       .catch(console.error);
@@ -162,7 +162,7 @@ export default function App() {
 
   // WebSocket: update latest reading per well
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8000/ws");
+    const ws = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws`);
 
     ws.onmessage = (event) => {
       const batch = JSON.parse(event.data);
