@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from database import Well, Reading, SessionLocal, get_db, init_db
+from database import Well, Reading, Alert, SessionLocal, get_db, init_db
 from simulator import get_all_wells, simulate_batch
 from ml.detector import get_risk_score, reload_model
 from ml.train import train
@@ -36,6 +36,19 @@ class ReadingResponse(BaseModel):
     temperature: float
     flow_rate: float
     risk_score: float = 0.0
+
+    model_config = {"from_attributes": True}
+
+
+class AlertResponse(BaseModel):
+    id: int
+    well_id: int
+    well_name: str
+    timestamp: str
+    pressure: float
+    temperature: float
+    flow_rate: float
+    risk_score: float
 
     model_config = {"from_attributes": True}
 
@@ -89,11 +102,26 @@ async def simulator_loop():
             for row in db_readings:
                 db.refresh(row)
 
+            well_names = {w["id"]: w["name"] for w in get_all_wells()}
             payload = []
             for row, r in zip(db_readings, readings):
+                score = get_risk_score(r["pressure"], r["temperature"], r["flow_rate"])
                 entry = ReadingResponse.model_validate(row).model_dump()
-                entry["risk_score"] = get_risk_score(r["pressure"], r["temperature"], r["flow_rate"])
+                entry["risk_score"] = score
                 payload.append(entry)
+
+                if (score >= 0.9 or r["pressure"] < 150
+                        or r["temperature"] > 110 or r["flow_rate"] < 30):
+                    db.add(Alert(
+                        well_id=r["well_id"],
+                        well_name=well_names.get(r["well_id"], f"Pozo {r['well_id']}"),
+                        timestamp=r["timestamp"],
+                        pressure=r["pressure"],
+                        temperature=r["temperature"],
+                        flow_rate=r["flow_rate"],
+                        risk_score=score,
+                    ))
+            db.commit()
             await manager.broadcast(json.dumps(payload))
         finally:
             db.close()
@@ -171,6 +199,20 @@ def simulate(
     for row in db_readings:
         db.refresh(row)
     return db_readings
+
+
+# ---------------------------------------------------------------------------
+# Alert endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/alerts", response_model=list[AlertResponse])
+def get_alerts(db: Session = Depends(get_db)):
+    return (
+        db.query(Alert)
+        .order_by(Alert.id.desc())
+        .limit(100)
+        .all()
+    )
 
 
 # ---------------------------------------------------------------------------

@@ -32,6 +32,19 @@ class Reading(Base):
     flow_rate: Mapped[float]
 
 
+class Alert(Base):
+    __tablename__ = "alerts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    well_id: Mapped[int] = mapped_column(ForeignKey("wells.id"))
+    well_name: Mapped[str]
+    timestamp: Mapped[str]
+    pressure: Mapped[float]
+    temperature: Mapped[float]
+    flow_rate: Mapped[float]
+    risk_score: Mapped[float]
+
+
 def init_db() -> None:
     Base.metadata.create_all(bind=engine)
 
