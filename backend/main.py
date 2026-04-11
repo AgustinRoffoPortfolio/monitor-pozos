@@ -94,46 +94,49 @@ async def simulator_loop():
 
         db = SessionLocal()
         try:
-            anomaly_id = random.randint(1, 10) if random.random() < 1 / 6 else None
-            readings = simulate_batch(anomaly_well_id=anomaly_id)
-            db_readings = []
-            for r in readings:
-                row = Reading(**r)
-                db.add(row)
-                db_readings.append(row)
-            db.commit()
-            for row in db_readings:
-                db.refresh(row)
+            try:
+                anomaly_id = random.randint(1, 10) if random.random() < 1 / 6 else None
+                readings = simulate_batch(anomaly_well_id=anomaly_id)
+                db_readings = []
+                for r in readings:
+                    row = Reading(**r)
+                    db.add(row)
+                    db_readings.append(row)
+                db.commit()
+                for row in db_readings:
+                    db.refresh(row)
 
-            well_names = {w["id"]: w["name"] for w in get_all_wells()}
-            payload = []
-            for row, r in zip(db_readings, readings):
-                score = get_risk_score(r["pressure"], r["temperature"], r["flow_rate"])
-                entry = ReadingResponse.model_validate(row).model_dump()
-                entry["risk_score"] = score
-                payload.append(entry)
+                well_names = {w["id"]: w["name"] for w in get_all_wells()}
+                payload = []
+                for row, r in zip(db_readings, readings):
+                    score = get_risk_score(r["pressure"], r["temperature"], r["flow_rate"])
+                    entry = ReadingResponse.model_validate(row).model_dump()
+                    entry["risk_score"] = score
+                    payload.append(entry)
 
-                if (
-                    score >= 0.9
-                    or r["pressure"] < 150
-                    or r["temperature"] > 110
-                    or r["flow_rate"] < 30
-                ):
-                    db.add(
-                        Alert(
-                            well_id=r["well_id"],
-                            well_name=well_names.get(
-                                r["well_id"], f"Pozo {r['well_id']}"
-                            ),
-                            timestamp=r["timestamp"],
-                            pressure=r["pressure"],
-                            temperature=r["temperature"],
-                            flow_rate=r["flow_rate"],
-                            risk_score=score,
+                    if (
+                        score >= 0.9
+                        or r["pressure"] < 150
+                        or r["temperature"] > 110
+                        or r["flow_rate"] < 30
+                    ):
+                        db.add(
+                            Alert(
+                                well_id=r["well_id"],
+                                well_name=well_names.get(
+                                    r["well_id"], f"Pozo {r['well_id']}"
+                                ),
+                                timestamp=r["timestamp"],
+                                pressure=r["pressure"],
+                                temperature=r["temperature"],
+                                flow_rate=r["flow_rate"],
+                                risk_score=score,
+                            )
                         )
-                    )
-            db.commit()
-            await manager.broadcast(json.dumps(payload))
+                db.commit()
+                await manager.broadcast(json.dumps(payload))
+            except Exception as e:
+                print(f"[simulator_loop error] {e}")
         finally:
             db.close()
 
