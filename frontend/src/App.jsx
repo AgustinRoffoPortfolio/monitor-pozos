@@ -192,7 +192,7 @@ export default function App() {
             (a) => !existingKeys.has(`${a.well_id}-${a.timestamp}`),
           );
           if (filtered.length === 0) return prev;
-          return [...filtered, ...prev].slice(0, 50);
+          return [...filtered, ...prev].slice(0, 100);
         });
         return currentWells;
       });

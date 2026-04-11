@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 function toHHMMSS(isoTimestamp) {
   return new Date(isoTimestamp).toLocaleTimeString('es-AR', { hour12: false })
@@ -16,8 +16,15 @@ const BTN = (disabled) => ({
 
 export default function AlertPanel({ alerts }) {
   const [page, setPage] = useState(0)
+  const prevLenRef = useRef(0)
 
-  useEffect(() => { setPage(0) }, [alerts])
+  useEffect(() => {
+    const prevLen = prevLenRef.current
+    prevLenRef.current = alerts?.length ?? 0
+    if ((alerts?.length ?? 0) > prevLen) {
+      setPage(0)
+    }
+  }, [alerts])
 
   if (!alerts || alerts.length === 0) return null
 
