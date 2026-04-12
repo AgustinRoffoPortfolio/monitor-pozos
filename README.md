@@ -36,13 +36,10 @@ Sistema de monitoreo en tiempo real con detección predictiva de anomalías para
 
 ## Arquitectura
 
-- Simulador de sensores → FastAPI → PostgreSQL
-↓
-- Isolation Forest (ML)
-↓
-- WebSocket broadcast
-↓
-- React Dashboard
+- ↓ Simulador de sensores → FastAPI → PostgreSQL
+- ↓ Isolation Forest (ML)
+- ↓ WebSocket broadcast
+- ↓ React Dashboard
 
 ---
 
