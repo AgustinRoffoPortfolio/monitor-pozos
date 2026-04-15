@@ -150,28 +150,20 @@ async def simulator_loop():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Reintentos para conectar a la DB al arrancar
-    import time
-
-    for attempt in range(10):
-        try:
-            init_db()
-            break
-        except Exception as e:
-            print(f"[DB] Intento {attempt + 1}/5 fallido: {e}")
-            if attempt < 9:
-                time.sleep(5)
-            else:
-                raise
-
-    db = SessionLocal()
+    # No bloqueamos el startup esperando la DB
+    # Las tablas se crean en el primer request si no existen
     try:
-        if db.query(Well).count() == 0:
-            for w in get_all_wells():
-                db.add(Well(**w))
-            db.commit()
-    finally:
-        db.close()
+        init_db()
+        db = SessionLocal()
+        try:
+            if db.query(Well).count() == 0:
+                for w in get_all_wells():
+                    db.add(Well(**w))
+                db.commit()
+        finally:
+            db.close()
+    except Exception as e:
+        print(f"[startup] DB no disponible aún: {e}")
 
     task = asyncio.create_task(simulator_loop())
     yield
