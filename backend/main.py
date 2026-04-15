@@ -109,7 +109,9 @@ async def simulator_loop():
                 well_names = {w["id"]: w["name"] for w in get_all_wells()}
                 payload = []
                 for row, r in zip(db_readings, readings):
-                    score = get_risk_score(r["pressure"], r["temperature"], r["flow_rate"])
+                    score = get_risk_score(
+                        r["pressure"], r["temperature"], r["flow_rate"]
+                    )
                     entry = ReadingResponse.model_validate(row).model_dump()
                     entry["risk_score"] = score
                     payload.append(entry)
@@ -148,7 +150,19 @@ async def simulator_loop():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    init_db()
+    # Reintentos para conectar a la DB al arrancar
+    import time
+
+    for attempt in range(10):
+        try:
+            init_db()
+            break
+        except Exception as e:
+            print(f"[DB] Intento {attempt + 1}/5 fallido: {e}")
+            if attempt < 9:
+                time.sleep(5)
+            else:
+                raise
 
     db = SessionLocal()
     try:
