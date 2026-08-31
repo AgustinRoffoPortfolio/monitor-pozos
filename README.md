@@ -1,12 +1,14 @@
 # Monitor de Pozos — Vaca Muerta
 
-Sistema de monitoreo en tiempo real con detección predictiva de anomalías para pozos petroleros, orientado al sector energético argentino.
+Sistema de monitoreo en tiempo real con detección de anomalías para pozos petroleros, orientado al sector energético argentino.
+
+https://github.com/user-attachments/assets/ee77dfbf-4225-4a1a-aa7c-70cd4a75d7d5
 
 ---
 
 ## ¿Qué hace?
 
-- Simula datos de sensores de 10 pozos en Vaca Muerta (presión, temperatura, caudal) actualizándose cada 5 segundos via WebSocket
+- Simula datos de sensores de 10 pozos en Vaca Muerta (presión, temperatura, caudal) actualizándose cada 5 segundos vía WebSocket
 - Aplica un modelo de Machine Learning (Isolation Forest) entrenado sobre lecturas normales para detectar anomalías en tiempo real
 - Visualiza el estado de cada pozo en un mapa interactivo de Neuquén con alertas por color
 - Persiste un historial de eventos críticos en base de datos con paginación
@@ -17,7 +19,7 @@ Sistema de monitoreo en tiempo real con detección predictiva de anomalías para
 
 **Backend**
 - Python + FastAPI — API REST y WebSocket
-- SQLAlchemy + PostgreSQL — persistencia de datos
+- SQLAlchemy — persistencia de datos (SQLite en local, PostgreSQL en producción)
 - scikit-learn (Isolation Forest) — detección de anomalías no supervisada
 - pandas + numpy — procesamiento de datos
 
@@ -26,15 +28,13 @@ Sistema de monitoreo en tiempo real con detección predictiva de anomalías para
 - Recharts — gráficos de series de tiempo
 - Leaflet.js — mapa interactivo
 
-**Deploy**
-- Render — backend + base de datos PostgreSQL
-- Vercel — frontend
+> El deploy original corrió sobre Render (backend + PostgreSQL) y Vercel (frontend). Hoy está dado de baja: la demo es el video de arriba.
 
 ---
 
 ## Arquitectura
 
-- ↓ Simulador de sensores → FastAPI → PostgreSQL
+- ↓ Simulador de sensores → FastAPI → Base de datos
 - ↓ Isolation Forest (ML)
 - ↓ WebSocket broadcast
 - ↓ React Dashboard
@@ -55,13 +55,15 @@ Sistema de monitoreo en tiempo real con detección predictiva de anomalías para
 
 **Requisitos:** Python 3.12+, Node.js 20+
 
+No hace falta levantar una base de datos: la capa de persistencia se resuelve por configuración y, sin la variable `DATABASE_URL`, cae a un archivo SQLite local. El modelo ya viene entrenado en `backend/ml/model.pkl`.
+
 ```bash
 # Backend
 cd backend
 python -m venv venv
 venv\Scripts\activate  # Windows
 pip install -r requirements.txt
-uvicorn main:app --reload
+uvicorn main:app --reload --port 8000
 
 # Frontend (nueva terminal)
 cd frontend
@@ -75,8 +77,12 @@ Dashboard disponible en `http://localhost:5173`
 
 ## Contexto
 
-Proyecto desarrollado como parte de un portfolio orientado al sector energético argentino (YPF, Shell, Pampa Energía). Los sistemas SCADA industriales se encargan de recolectar datos de sensores; este proyecto agrega una capa de detección predictiva por encima de esos datos usando ML no supervisado.
+Proyecto desarrollado como parte de un portfolio orientado al sector energético argentino. Los sistemas SCADA industriales se encargan de recolectar datos de sensores; este proyecto agrega una capa de detección de anomalías por encima de esos datos usando ML no supervisado.
+
+**Repos hermanos del portfolio:**
+- [oilfield-scada](https://github.com/AgustinRoffoPortfolio/oilfield-scada)
+- [opc-gateway-da-ua](https://github.com/AgustinRoffoPortfolio/opc-gateway-da-ua)
 
 ---
 
-*Agustín Roffo — Ingeniería en Sistemas, UBA*
+*Agustín Roffo — Ingeniería en Informática, FIUBA*
