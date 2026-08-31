@@ -2,8 +2,6 @@
 
 Sistema de monitoreo en tiempo real con detección predictiva de anomalías para pozos petroleros, orientado al sector energético argentino.
 
-**[Ver demo en vivo](https://monitor-pozos.vercel.app)**
-
 ---
 
 ## ¿Qué hace?
