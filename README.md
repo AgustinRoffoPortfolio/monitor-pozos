@@ -79,9 +79,21 @@ Dashboard disponible en `http://localhost:5173`
 
 Proyecto desarrollado como parte de un portfolio orientado al sector energético argentino. Los sistemas SCADA industriales se encargan de recolectar datos de sensores; este proyecto agrega una capa de detección de anomalías por encima de esos datos usando ML no supervisado.
 
-**Repos hermanos del portfolio:**
-- [oilfield-scada](https://github.com/AgustinRoffoPortfolio/oilfield-scada)
-- [opc-gateway-da-ua](https://github.com/AgustinRoffoPortfolio/opc-gateway-da-ua)
+## Repos hermanos del portfolio
+
+Los otros dos proyectos están una capa más abajo: se ocupan de cómo el dato
+viaja desde el sensor hasta la base. Este se ocupa de qué hacer con el dato
+una vez que ya está guardado.
+
+- **[oilfield-scada](https://github.com/AgustinRoffoPortfolio/oilfield-scada)** —
+  La cadena industrial completa, construida capa por capa en vez de configurar
+  un producto comercial: RTU Modbus TCP → servidor OPC UA cifrado → ingesta →
+  TimescaleDB → dashboard propio con motor de alarmas. C# / .NET 10, frontend
+  sin una sola dependencia de terceros.
+- **[opc-gateway-da-ua](https://github.com/AgustinRoffoPortfolio/opc-gateway-da-ua)** —
+  El caso de que esa cadena ya exista y sea de los años 90: un gateway que expone
+  un servidor OPC DA legado detrás de un OPC UA moderno, sobre COM interop, sin
+  tocar ni migrar el sistema existente.
 
 ---
 
