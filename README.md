@@ -53,7 +53,7 @@ https://github.com/user-attachments/assets/ee77dfbf-4225-4a1a-aa7c-70cd4a75d7d5
 
 ## Correr localmente
 
-**Requisitos:** Python 3.12+, Node.js 20+
+**Requisitos:** Python 3.12+, Node.js 22.23.4+ o 24.22.1+
 
 No hace falta levantar una base de datos: la capa de persistencia se resuelve por configuración y, sin la variable `DATABASE_URL`, cae a un archivo SQLite local. El modelo ya viene entrenado en `backend/ml/model.pkl`.
 
