@@ -73,6 +73,16 @@ npm run dev
 
 Dashboard disponible en `http://localhost:5173`
 
+### Tests
+
+Los tests del backend usan pytest y el `TestClient` de FastAPI contra un SQLite temporal: no tocan `pozos.db` ni una base Postgres, y no reentrenan el modelo.
+
+```bash
+cd backend
+pip install -r requirements-dev.txt
+pytest
+```
+
 ---
 
 ## Contexto
