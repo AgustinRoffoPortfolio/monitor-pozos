@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
+import { readingShape, wellShape } from "./shapes";
 import WellMap from "./components/WellMap";
 import WellChart from "./components/WellChart";
 import AlertPanel from "./components/AlertPanel";
@@ -130,6 +132,13 @@ function WellCard({ well, reading, onSelect, isSelected }) {
   );
 }
 
+WellCard.propTypes = {
+  well: wellShape.isRequired,
+  reading: readingShape, // null mientras el pozo no tiene lecturas
+  onSelect: PropTypes.func.isRequired,
+  isSelected: PropTypes.bool.isRequired,
+};
+
 function Row({ label, value }) {
   return (
     <tr>
@@ -140,6 +149,11 @@ function Row({ label, value }) {
     </tr>
   );
 }
+
+Row.propTypes = {
+  label: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+};
 
 export default function App() {
   const [wells, setWells] = useState([]);
@@ -280,7 +294,7 @@ export default function App() {
             >
               Historial — {selectedWell.name}
             </h2>
-            <WellChart wellId={selectedWell.id} wellName={selectedWell.name} />
+            <WellChart wellId={selectedWell.id} />
           </div>
         )}
       </div>

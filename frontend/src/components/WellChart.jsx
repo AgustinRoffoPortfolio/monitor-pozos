@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import {
   ResponsiveContainer,
   LineChart,
@@ -13,7 +14,7 @@ function toHHMMSS(isoTimestamp) {
   return new Date(isoTimestamp).toLocaleTimeString("es-AR", { hour12: false });
 }
 
-export default function WellChart({ wellId, wellName }) {
+export default function WellChart({ wellId }) {
   const [data, setData] = useState([]);
 
   useEffect(() => {
@@ -75,3 +76,7 @@ export default function WellChart({ wellId, wellName }) {
     </ResponsiveContainer>
   );
 }
+
+WellChart.propTypes = {
+  wellId: PropTypes.number.isRequired,
+};

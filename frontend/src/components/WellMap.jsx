@@ -1,5 +1,7 @@
 import { MapContainer, TileLayer, CircleMarker, Tooltip } from 'react-leaflet'
+import PropTypes from 'prop-types'
 import 'leaflet/dist/leaflet.css'
+import { readingShape, wellShape } from '../shapes'
 
 const CENTER = [-38.85, -69.10]
 const ZOOM   = 10
@@ -38,4 +40,9 @@ export default function WellMap({ wells, readings }) {
       })}
     </MapContainer>
   )
+}
+
+WellMap.propTypes = {
+  wells: PropTypes.arrayOf(wellShape).isRequired,
+  readings: PropTypes.objectOf(readingShape).isRequired, // { well_id: última lectura }
 }

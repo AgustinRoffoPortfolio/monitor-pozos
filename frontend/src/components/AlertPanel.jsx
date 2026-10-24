@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
+import PropTypes from 'prop-types'
+import { alertShape } from '../shapes'
 
 function toHHMMSS(isoTimestamp) {
   return new Date(isoTimestamp).toLocaleTimeString('es-AR', { hour12: false })
@@ -113,4 +115,8 @@ export default function AlertPanel({ alerts }) {
       </div>
     </div>
   )
+}
+
+AlertPanel.propTypes = {
+  alerts: PropTypes.arrayOf(alertShape),
 }
